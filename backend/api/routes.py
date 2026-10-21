@@ -28,6 +28,41 @@ def get_overview_metrics():
     """Returns high-level system overview and metrics."""
     return olap_engine.get_summary_kpis()
 
+@api_router.get("/raw-records")
+def get_raw_staging_records():
+    """Returns all original ingested raw staging records with duplicate mapping annotations."""
+    sql = """
+    SELECT 
+        r.raw_id,
+        r.source_system,
+        r.source_record_id,
+        r.raw_full_name,
+        r.raw_dob,
+        r.raw_email,
+        r.raw_phone,
+        r.raw_department,
+        r.raw_role,
+        m.canonical_id,
+        e.resolved_name,
+        e.cluster_size,
+        CASE WHEN e.cluster_size > 1 THEN 1 ELSE 0 END as is_duplicate
+    FROM stg_raw_records r
+    LEFT JOIN er_record_mapping m ON r.raw_id = m.raw_id
+    LEFT JOIN er_resolved_entities e ON m.canonical_id = e.canonical_id
+    ORDER BY r.raw_id ASC;
+    """
+    rows = db_manager.execute_query(sql)
+    total = len(rows)
+    duplicates = sum(1 for r in rows if r["is_duplicate"] == 1)
+    singletons = total - duplicates
+    return {
+        "total_count": total,
+        "duplicate_count": duplicates,
+        "singleton_count": singletons,
+        "deduplication_rate_pct": round((duplicates / total * 100), 1) if total > 0 else 0,
+        "records": rows
+    }
+
 @api_router.post("/pipeline/initialize")
 def initialize_warehouse(force_reset: bool = True):
     """Initializes SQLite database with Schema v1.0 and reference dimensions."""

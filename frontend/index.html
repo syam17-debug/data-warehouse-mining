@@ -78,6 +78,9 @@
 
         <!-- Global Status Badges & Controls -->
         <div class="flex items-center space-x-3">
+          <button onclick="openRawDataModal()" id="btn-view-raw" class="text-xs inline-flex items-center px-3 py-1.5 border border-indigo-200 rounded-md font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition shadow-2xs">
+            <i class="fa-solid fa-table-list mr-1.5 text-indigo-600"></i> View Original Raw Data (<span id="raw-btn-count">--</span>)
+          </button>
           <span id="badge-schema-version" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
             <i class="fa-solid fa-code-branch mr-1.5 text-xs"></i> Schema: <span id="val-schema-ver" class="ml-1 font-bold">v1.0</span>
           </span>
@@ -125,6 +128,25 @@
 
     <!-- ==================== TAB 1: OVERVIEW & KPIS ==================== -->
     <div id="section-overview" class="tab-content space-y-6">
+      
+      <!-- Enterprise Consolidation & Duplicate Realignment Banner -->
+      <div class="bg-gradient-to-r from-indigo-50/90 via-white to-emerald-50/70 p-5 rounded-xl border border-indigo-100 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2 text-indigo-950 font-bold text-sm">
+            <span class="p-1.5 bg-indigo-600 text-white rounded-md text-xs"><i class="fa-solid fa-layer-group"></i></span>
+            <span>Enterprise Multi-Campus Consolidation & Deduplication Breakdown</span>
+          </div>
+          <p class="text-xs text-softslate-600 mt-1 max-w-3xl leading-relaxed">
+            Consolidating <span class="font-bold text-indigo-700 font-mono" id="banner-raw-count">--</span> original multi-campus staging records into <span class="font-bold text-emerald-700 font-mono" id="banner-golden-count">--</span> unique golden profiles by removing <span class="font-bold text-amber-700 font-mono" id="banner-dupe-count">--</span> redundant duplicate records (<span class="font-bold text-emerald-700" id="banner-rate">--%</span> duplicate inflation eliminated across 4 legacy silos).
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="openRawDataModal()" class="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xs transition flex items-center whitespace-nowrap">
+            <i class="fa-solid fa-table-list mr-1.5"></i> Inspect Original Raw Data
+          </button>
+        </div>
+      </div>
+
       <!-- KPI Metric Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-softslate-200 shadow-2xs">
@@ -581,6 +603,96 @@
 Loading Cypher script...
           </pre>
         </div>
+      </div>
+    </div>
+
+    <!-- ==================== RAW STAGING DATA MODAL ==================== -->
+    <div id="raw-data-modal" class="fixed inset-0 bg-softslate-900/40 backdrop-blur-xs z-50 flex items-center justify-center hidden p-3 sm:p-6">
+      <div class="bg-white rounded-2xl max-w-6xl w-full border border-softslate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+        
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-softslate-100 flex justify-between items-start bg-softslate-50/70">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="p-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm"><i class="fa-solid fa-database"></i></span>
+              <h3 class="text-base font-bold text-softslate-900">Original Ingested Raw Data (Staging Repository)</h3>
+            </div>
+            <p class="text-xs text-softslate-500 mt-1">
+              Inspect all uncleaned, multi-source records from legacy university databases before entity resolution and slowly changing dimension modeling.
+            </p>
+          </div>
+          <button onclick="closeRawDataModal()" class="text-softslate-400 hover:text-softslate-600 p-1.5 rounded-lg hover:bg-softslate-100 text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Metric Badges & Filter Bar -->
+        <div class="p-4 border-b border-softslate-100 bg-white flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="px-3 py-1 rounded-full bg-softslate-100 text-softslate-700 font-medium">
+              Total Raw: <b class="text-softslate-900" id="raw-modal-total">--</b>
+            </span>
+            <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">
+              <i class="fa-solid fa-clone mr-1 text-amber-600"></i> Duplicates: <b id="raw-modal-dupes">--</b>
+            </span>
+            <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+              <i class="fa-solid fa-user-check mr-1 text-emerald-600"></i> Unique Singletons: <b id="raw-modal-singletons">--</b>
+            </span>
+            <span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200 font-medium">
+              Deduplication: <b id="raw-modal-rate">--%</b>
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <input type="text" id="raw-search-input" onkeyup="filterRawDataTable()" placeholder="Search raw name, email, ID..." class="text-xs px-3 py-1.5 border border-softslate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 w-64">
+            <button onclick="downloadRawCSV()" class="px-3 py-1.5 text-xs font-semibold rounded-md text-softslate-700 bg-white border border-softslate-300 hover:bg-softslate-50 transition shadow-2xs whitespace-nowrap">
+              <i class="fa-solid fa-download mr-1 text-indigo-500"></i> CSV Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter System Pills -->
+        <div class="px-4 py-2.5 bg-softslate-50 border-b border-softslate-100 flex items-center space-x-2 overflow-x-auto text-xs">
+          <span class="text-softslate-500 font-semibold mr-1">Filter:</span>
+          <button onclick="setRawFilter('ALL')" id="rf-ALL" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-indigo-600 text-white">All Records</button>
+          <button onclick="setRawFilter('SIS_CAMPUS_NORTH')" id="rf-SIS_CAMPUS_NORTH" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-softslate-600 border border-softslate-200 hover:bg-softslate-100">SIS North</button>
+          <button onclick="setRawFilter('HR_CAMPUS_SOUTH')" id="rf-HR_CAMPUS_SOUTH" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-softslate-600 border border-softslate-200 hover:bg-softslate-100">HR South</button>
+          <button onclick="setRawFilter('PORTAL_ONLINE_ADM')" id="rf-PORTAL_ONLINE_ADM" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-softslate-600 border border-softslate-200 hover:bg-softslate-100">Online Admissions</button>
+          <button onclick="setRawFilter('ALUMNI_ADVANCEMENT')" id="rf-ALUMNI_ADVANCEMENT" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-softslate-600 border border-softslate-200 hover:bg-softslate-100">Alumni</button>
+          <button onclick="setRawFilter('DUPLICATES_ONLY')" id="rf-DUPLICATES_ONLY" class="raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-amber-700 border border-amber-300 hover:bg-amber-50">⚠️ Duplicates Only</button>
+        </div>
+
+        <!-- Table Container -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-softslate-100 text-softslate-600 uppercase text-2xs font-semibold sticky top-0 border-b border-softslate-200 z-10">
+              <tr>
+                <th class="py-2.5 px-3"># Raw ID</th>
+                <th class="py-2.5 px-3">Source System</th>
+                <th class="py-2.5 px-3">System Record ID</th>
+                <th class="py-2.5 px-3">Reported Full Name</th>
+                <th class="py-2.5 px-3">DOB</th>
+                <th class="py-2.5 px-3">Email Address</th>
+                <th class="py-2.5 px-3">Phone</th>
+                <th class="py-2.5 px-3">Role & Dept</th>
+                <th class="py-2.5 px-3">Duplicate Status</th>
+                <th class="py-2.5 px-3">Resolved Golden ID</th>
+              </tr>
+            </thead>
+            <tbody id="raw-table-body" class="divide-y divide-softslate-100 text-softslate-700">
+              <tr>
+                <td colspan="10" class="text-center py-8 text-softslate-400">Loading raw records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-3 bg-softslate-50 border-t border-softslate-100 flex justify-between items-center text-xs text-softslate-500">
+          <span id="raw-table-summary-count">Showing records</span>
+          <button onclick="closeRawDataModal()" class="px-4 py-1.5 text-xs bg-white border border-softslate-300 rounded-md text-softslate-700 hover:bg-softslate-100 shadow-2xs">Close Explorer</button>
+        </div>
+
       </div>
     </div>
 

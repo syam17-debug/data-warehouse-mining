@@ -414,6 +414,138 @@ PERSON_TEMPLATES = [
                 "dept": "CS", "role": "STUDENT"
             }
         ]
+    },
+    {
+        "id_base": "1016",
+        "canonical_name": "Dr. Christopher James Nolan",
+        "dob": "1975-07-30",
+        "phone": "+1-555-081-4433",
+        "clean_email": "c.nolan@south.univ.edu",
+        "dept": "HUM",
+        "role": "FACULTY",
+        "variants": [
+            {
+                "source": "HR_CAMPUS_SOUTH",
+                "source_id": "S-FAC-4011",
+                "first": "Christopher", "last": "Nolan", "full": "Dr. Christopher J. Nolan",
+                "dob": "1975-07-30", "email": "c.nolan@south.univ.edu", "phone": "555-081-4433",
+                "dept": "HUM", "role": "FACULTY", "rank": "Full Professor"
+            },
+            {
+                "source": "ALUMNI_ADVANCEMENT",
+                "source_id": "ALU-1998-112",
+                "first": "Chris", "last": "Nolan", "full": "Chris Nolan",
+                "dob": "1975-07-30", "email": "chris.nolan.cinema@alum.univ.edu", "phone": "555.081.4433",
+                "dept": "HUM", "role": "ALUMNI", "donations": 25000
+            }
+        ]
+    },
+    {
+        "id_base": "1017",
+        "canonical_name": "Isabella Grace Rossi",
+        "dob": "2002-03-14",
+        "phone": "+1-555-092-7744",
+        "clean_email": "irossi@north.univ.edu",
+        "dept": "MED",
+        "role": "STUDENT",
+        "variants": [
+            {
+                "source": "SIS_CAMPUS_NORTH",
+                "source_id": "N-STU-7801",
+                "first": "Isabella", "last": "Rossi", "full": "Isabella G. Rossi",
+                "dob": "2002-03-14", "email": "irossi@north.univ.edu", "phone": "555-092-7744",
+                "dept": "MED", "role": "STUDENT"
+            },
+            {
+                "source": "PORTAL_ONLINE_ADM",
+                "source_id": "ADM-2024-819",
+                "first": "Bella", "last": "Rossi", "full": "Bella Rossi",
+                "dob": "2002-03-14", "email": "bella.rossi02@gmail.com", "phone": "(555) 092-7744",
+                "dept": "MED", "role": "STUDENT"
+            }
+        ]
+    },
+    {
+        "id_base": "1018",
+        "canonical_name": "Alexander Hamilton",
+        "dob": "1999-01-11",
+        "phone": "+1-555-017-7611",
+        "clean_email": "a.hamilton@north.univ.edu",
+        "dept": "BUS",
+        "role": "STUDENT",
+        "variants": [
+            {
+                "source": "SIS_CAMPUS_NORTH",
+                "source_id": "N-STU-8822",
+                "first": "Alexander", "last": "Hamilton", "full": "Alexander Hamilton",
+                "dob": "1999-01-11", "email": "a.hamilton@north.univ.edu", "phone": "555-017-7611",
+                "dept": "BUS", "role": "STUDENT"
+            },
+            {
+                "source": "PORTAL_ONLINE_ADM",
+                "source_id": "ADM-2023-771",
+                "first": "Alex", "last": "Hamilton", "full": "Alex Hamilton",
+                "dob": "1999-01-11", "email": "treasury.alex@yahoo.com", "phone": "555 017 7611",
+                "dept": "BUS", "role": "STUDENT"
+            },
+            {
+                "source": "HR_CAMPUS_SOUTH",
+                "source_id": "S-TA-7741",
+                "first": "Alexander", "last": "Hamilton", "full": "Alexander Hamilton",
+                "dob": "1999-01-11", "email": "ahamilton@south.univ.edu", "phone": "5550177611",
+                "dept": "BUS", "role": "TEACHING_ASST"
+            }
+        ]
+    },
+    {
+        "id_base": "1019",
+        "canonical_name": "Fatima Noor Al-Mansoor",
+        "dob": "2001-09-27",
+        "phone": "+1-555-039-6612",
+        "clean_email": "f.almansoor@north.univ.edu",
+        "dept": "CS",
+        "role": "STUDENT",
+        "variants": [
+            {
+                "source": "SIS_CAMPUS_NORTH",
+                "source_id": "N-STU-9943",
+                "first": "Fatima", "last": "Al-Mansoor", "full": "Fatima N. Al-Mansoor",
+                "dob": "2001-09-27", "email": "f.almansoor@north.univ.edu", "phone": "555-039-6612",
+                "dept": "CS", "role": "STUDENT"
+            },
+            {
+                "source": "PORTAL_ONLINE_ADM",
+                "source_id": "ADM-2024-381",
+                "first": "Fatima", "last": "Mansoor", "full": "Fatima Mansoor",
+                "dob": "2001-09-27", "email": "fatima.mansoor@gmail.com", "phone": "555 039 6612",
+                "dept": "CS", "role": "STUDENT"
+            }
+        ]
+    },
+    {
+        "id_base": "1020",
+        "canonical_name": "Daniel Patrick Murphy",
+        "dob": "1993-05-20",
+        "phone": "+1-555-067-8811",
+        "clean_email": "d.murphy@south.univ.edu",
+        "dept": "MATH",
+        "role": "STAFF",
+        "variants": [
+            {
+                "source": "HR_CAMPUS_SOUTH",
+                "source_id": "S-STF-5012",
+                "first": "Daniel", "last": "Murphy", "full": "Daniel P. Murphy",
+                "dob": "1993-05-20", "email": "d.murphy@south.univ.edu", "phone": "555-067-8811",
+                "dept": "MATH", "role": "STAFF"
+            },
+            {
+                "source": "ALUMNI_ADVANCEMENT",
+                "source_id": "ALU-2015-441",
+                "first": "Dan", "last": "Murphy", "full": "Dan Murphy",
+                "dob": "1993-05-20", "email": "dan.murphy93@alum.univ.edu", "phone": "555.067.8811",
+                "dept": "MATH", "role": "ALUMNI", "donations": 3200
+            }
+        ]
     }
 ]
 
@@ -503,9 +635,21 @@ def generate_multi_campus_dataset() -> Dict[str, Any]:
                 "ingestion_batch": "WAVE_1_INITIAL"
             })
             
-    # 2. Add 14 diverse students with controlled duplicates to hit exactly 54-58 total records
-    first_names = ["James", "Aaliyah", "Benjamin", "Chloe", "Devon", "Fatima", "Gabriel", "Hanna", "Ian", "Jasmine", "Kevin", "Lila", "Mateo", "Nora"]
-    last_names = ["Becker", "Castillo", "Dubois", "El-Hashem", "Fischer", "Gupta", "Huang", "Ivanov", "Johansson", "Kowalski", "Lopez", "Miller", "Novak", "O'Connor"]
+    # 2. Add diverse students with realistic cross-campus duplicates
+    first_names = [
+        "James", "Aaliyah", "Benjamin", "Chloe", "Devon", "Fatima", "Gabriel", "Hanna",
+        "Ian", "Jasmine", "Kevin", "Lila", "Mateo", "Nora", "Omar", "Priscilla",
+        "Quinn", "Rafael", "Samantha", "Tyler", "Uma", "Victor", "Wendy", "Xavier",
+        "Yasmine", "Zachary", "Abigail", "Brandon", "Camila", "Derek", "Evelyn", "Felix",
+        "Grace", "Henry", "Iris", "Julian", "Kayla", "Leo", "Maya", "Nathan"
+    ]
+    last_names = [
+        "Becker", "Castillo", "Dubois", "El-Hashem", "Fischer", "Gupta", "Huang", "Ivanov",
+        "Johansson", "Kowalski", "Lopez", "Miller", "Novak", "O'Connor", "Park", "Quintero",
+        "Reyes", "Schneider", "Tanaka", "Underwood", "Vargas", "Williams", "Xiao", "Yamamoto",
+        "Zimmerman", "Adams", "Bennett", "Campbell", "Diaz", "Evans", "Foster", "Garcia",
+        "Hughes", "Ibrahim", "Jenkins", "Kim", "Larson", "Morales", "Nelson", "Ortiz"
+    ]
     depts = ["CS", "EE", "BUS", "MED", "MATH", "HUM"]
     
     for i in range(len(first_names)):
@@ -513,9 +657,9 @@ def generate_multi_campus_dataset() -> Dict[str, Any]:
         ln = last_names[i]
         dob = f"200{random.randint(0, 3)}-{random.randint(1, 12):02d}-{random.randint(1, 28):02d}"
         phone = f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}"
-        dept = random.choice(depts)
+        dept = depts[i % len(depts)]
         
-        # Primary SIS record
+        # Primary SIS record (Campus North)
         raw_records.append({
             "source_system": "SIS_CAMPUS_NORTH",
             "source_record_id": f"N-STU-3{i:03d}",
@@ -531,8 +675,8 @@ def generate_multi_campus_dataset() -> Dict[str, Any]:
             "ingestion_batch": "WAVE_1_INITIAL"
         })
         
-        # 8 of them also have an online admissions duplicate record
-        if i % 2 == 0 or i == 1 or i == 5:
+        # Cross-System Duplicate 1: Online Admissions Portal (Half of students)
+        if i % 2 == 0:
             raw_records.append({
                 "source_system": "PORTAL_ONLINE_ADM",
                 "source_record_id": f"ADM-2024-{i:03d}",
@@ -545,6 +689,40 @@ def generate_multi_campus_dataset() -> Dict[str, Any]:
                 "raw_department": dept,
                 "raw_role": "STUDENT",
                 "raw_extra_payload": "{}",
+                "ingestion_batch": "WAVE_1_INITIAL"
+            })
+
+        # Cross-System Duplicate 2: HR Campus South (Teaching Assistants / Student Workers)
+        if i % 4 == 0:
+            raw_records.append({
+                "source_system": "HR_CAMPUS_SOUTH",
+                "source_record_id": f"S-TA-8{i:03d}",
+                "raw_first_name": fn,
+                "raw_last_name": ln,
+                "raw_full_name": f"{fn} {ln}",
+                "raw_dob": dob,
+                "raw_email": f"{fn[0].lower()}{ln.lower()}@south.univ.edu",
+                "raw_phone": phone.replace("-", ""),
+                "raw_department": dept,
+                "raw_role": "TEACHING_ASST",
+                "raw_extra_payload": str({"hourly_wage": 24.50}),
+                "ingestion_batch": "WAVE_1_INITIAL"
+            })
+
+        # Cross-System Duplicate 3: Alumni Foundation (Continuing Students with prior degree)
+        if i % 8 == 0:
+            raw_records.append({
+                "source_system": "ALUMNI_ADVANCEMENT",
+                "source_record_id": f"ALU-2022-{i:03d}",
+                "raw_first_name": fn,
+                "raw_last_name": ln,
+                "raw_full_name": f"{fn} {ln}",
+                "raw_dob": dob,
+                "raw_email": f"{fn.lower()}.alum@univ.edu",
+                "raw_phone": phone,
+                "raw_department": dept,
+                "raw_role": "ALUMNI",
+                "raw_extra_payload": str({"donations": 1500}),
                 "ingestion_batch": "WAVE_1_INITIAL"
             })
 

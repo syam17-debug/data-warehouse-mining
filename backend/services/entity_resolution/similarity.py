@@ -16,6 +16,12 @@ NICKNAME_MAP = {
     "will": "william",
     "sophie": "sophia", "sophia": "sophie",
     "luke": "lucas", "lucas": "luke",
+    "chris": "christopher", "christopher": "chris",
+    "bella": "isabella", "isabella": "bella",
+    "dan": "daniel", "daniel": "dan",
+    "sam": "samuel", "samuel": "sam",
+    "nate": "nathaniel", "nathaniel": "nate",
+    "gaby": "gabriela", "gabriela": "gaby",
     "tarek": "tariq", "tariq": "tarek",
     "mohamed": "mohammed", "mohammed": "mohamed"
 }

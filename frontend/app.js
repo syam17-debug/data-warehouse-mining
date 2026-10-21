@@ -68,6 +68,7 @@ GROUP BY primary_role;`
 
 document.addEventListener('DOMContentLoaded', () => {
   loadOverview();
+  loadRawRecords();
   loadGraph();
   loadEntities();
   loadSCDAuditLog();
@@ -141,14 +142,31 @@ async function loadOverview() {
       data = await res.json();
     }
 
-    document.getElementById('kpi-raw').textContent = data.total_raw_records || 53;
-    document.getElementById('kpi-golden').textContent = data.resolved_golden_entities || 29;
-    document.getElementById('kpi-dedupe-rate').textContent = `${data.deduplication_rate_pct || 45.3}% Deduplication`;
-    document.getElementById('kpi-edges').textContent = data.similarity_edges_count || 26;
-    document.getElementById('kpi-scd-versions').textContent = data.scd_total_row_versions || 25;
-    document.getElementById('kpi-active-students').textContent = `${data.active_unique_students || 25} Active Students`;
+    const totalRaw = data.total_raw_records || 116;
+    const golden = data.resolved_golden_entities || 61;
+    const dupes = data.duplicates_consolidated || (totalRaw - golden);
+    const rate = data.deduplication_rate_pct || 47.4;
+
+    document.getElementById('kpi-raw').textContent = totalRaw;
+    document.getElementById('kpi-golden').textContent = golden;
+    document.getElementById('kpi-dedupe-rate').textContent = `${rate}% Deduplication`;
+    document.getElementById('kpi-edges').textContent = data.similarity_edges_count || 79;
+    document.getElementById('kpi-scd-versions').textContent = data.scd_total_row_versions || 56;
+    document.getElementById('kpi-active-students').textContent = `${data.active_unique_students || 56} Active Students`;
     document.getElementById('val-schema-ver').textContent = data.current_schema_version || 'v1.0';
     document.getElementById('schema-active-ver-tag').textContent = data.current_schema_version || 'v1.0';
+
+    // Populate header & overview banner stats
+    const rawBtnCount = document.getElementById('raw-btn-count');
+    if (rawBtnCount) rawBtnCount.textContent = totalRaw;
+    const bannerRaw = document.getElementById('banner-raw-count');
+    if (bannerRaw) bannerRaw.textContent = totalRaw;
+    const bannerGolden = document.getElementById('banner-golden-count');
+    if (bannerGolden) bannerGolden.textContent = golden;
+    const bannerDupe = document.getElementById('banner-dupe-count');
+    if (bannerDupe) bannerDupe.textContent = dupes;
+    const bannerRate = document.getElementById('banner-rate');
+    if (bannerRate) bannerRate.textContent = `${rate}%`;
 
     renderOverviewCharts();
   } catch (err) {
@@ -920,3 +938,206 @@ async function triggerWave3() {
     btn.innerHTML = '<i class="fa-solid fa-layer-group mr-1"></i> Wave 3: Evolve to v3.0 & Alumni Fusion';
   }
 }
+
+// ==================== RAW STAGING RECORDS EXPLORER ====================
+let allRawRecords = [];
+let filteredRawRecords = [];
+let currentRawFilter = 'ALL';
+
+async function openRawDataModal() {
+  const modal = document.getElementById('raw-data-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+  if (!allRawRecords || allRawRecords.length === 0) {
+    await loadRawRecords();
+  }
+}
+
+function closeRawDataModal() {
+  const modal = document.getElementById('raw-data-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+}
+
+// Close on escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeRawDataModal();
+  }
+});
+
+async function loadRawRecords() {
+  try {
+    const inj = getInjected();
+    let data;
+    if (inj && inj.raw_records_data) {
+      data = inj.raw_records_data;
+    } else {
+      const res = await fetch('/api/raw-records');
+      data = await res.json();
+    }
+
+    allRawRecords = data.records || [];
+    
+    // Update modal stats
+    const totalEl = document.getElementById('raw-modal-total');
+    if (totalEl) totalEl.textContent = data.total_count || allRawRecords.length;
+    const dupeEl = document.getElementById('raw-modal-dupes');
+    if (dupeEl) dupeEl.textContent = data.duplicate_count !== undefined ? data.duplicate_count : allRawRecords.filter(r => r.is_duplicate === 1).length;
+    const singEl = document.getElementById('raw-modal-singletons');
+    if (singEl) singEl.textContent = data.singleton_count !== undefined ? data.singleton_count : allRawRecords.filter(r => r.is_duplicate !== 1).length;
+    const rateEl = document.getElementById('raw-modal-rate');
+    if (rateEl) {
+      const dupCount = data.duplicate_count !== undefined ? data.duplicate_count : allRawRecords.filter(r => r.is_duplicate === 1).length;
+      const totCount = data.total_count || allRawRecords.length || 1;
+      rateEl.textContent = `${data.deduplication_rate_pct !== undefined ? data.deduplication_rate_pct : ((dupCount / totCount) * 100).toFixed(1)}%`;
+    }
+
+    const rawBtnCount = document.getElementById('raw-btn-count');
+    if (rawBtnCount && allRawRecords.length > 0) {
+      rawBtnCount.textContent = allRawRecords.length;
+    }
+
+    filterRawDataTable();
+  } catch (err) {
+    console.error('Failed to load raw staging records:', err);
+    const tbody = document.getElementById('raw-table-body');
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-rose-500 font-medium">Failed to load staging records: ${err.message}</td></tr>`;
+    }
+  }
+}
+
+function setRawFilter(filterKey) {
+  currentRawFilter = filterKey;
+  document.querySelectorAll('.raw-filter-btn').forEach(btn => {
+    btn.className = 'raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-white text-softslate-600 border border-softslate-200 hover:bg-softslate-100';
+  });
+  const activeBtn = document.getElementById(`rf-${filterKey}`);
+  if (activeBtn) {
+    if (filterKey === 'DUPLICATES_ONLY') {
+      activeBtn.className = 'raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-amber-600 text-white border border-amber-600';
+    } else {
+      activeBtn.className = 'raw-filter-btn px-2.5 py-1 rounded-md font-medium bg-indigo-600 text-white';
+    }
+  }
+  filterRawDataTable();
+}
+
+function filterRawDataTable() {
+  const searchInput = document.getElementById('raw-search-input');
+  const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  
+  filteredRawRecords = allRawRecords.filter(r => {
+    // 1. Source system or duplicate status filter
+    if (currentRawFilter === 'DUPLICATES_ONLY' && r.is_duplicate !== 1) {
+      return false;
+    } else if (currentRawFilter !== 'ALL' && currentRawFilter !== 'DUPLICATES_ONLY' && r.source_system !== currentRawFilter) {
+      return false;
+    }
+
+    // 2. Search term filter
+    if (!searchTerm) return true;
+    return (
+      (r.raw_full_name && r.raw_full_name.toLowerCase().includes(searchTerm)) ||
+      (r.raw_email && r.raw_email.toLowerCase().includes(searchTerm)) ||
+      (r.source_record_id && r.source_record_id.toLowerCase().includes(searchTerm)) ||
+      (r.canonical_id && r.canonical_id.toLowerCase().includes(searchTerm)) ||
+      (r.raw_id && String(r.raw_id).includes(searchTerm)) ||
+      (r.raw_department && r.raw_department.toLowerCase().includes(searchTerm))
+    );
+  });
+
+  renderRawDataTable(filteredRawRecords);
+}
+
+function renderRawDataTable(records) {
+  const tbody = document.getElementById('raw-table-body');
+  const countEl = document.getElementById('raw-table-summary-count');
+  if (!tbody) return;
+
+  if (countEl) {
+    countEl.textContent = `Showing ${records.length} of ${allRawRecords.length} raw records`;
+  }
+
+  if (records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-softslate-400">No raw staging records match the active filter or search criteria.</td></tr>`;
+    return;
+  }
+
+  const systemBadges = {
+    'SIS_CAMPUS_NORTH': '<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">SIS North</span>',
+    'HR_CAMPUS_SOUTH': '<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">HR South</span>',
+    'PORTAL_ONLINE_ADM': '<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">Online Adm</span>',
+    'ALUMNI_ADVANCEMENT': '<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">Alumni Adv</span>'
+  };
+
+  tbody.innerHTML = records.map(r => {
+    const isDupe = r.is_duplicate === 1;
+    const dupeBadge = isDupe
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-amber-50 text-amber-800 border border-amber-200" title="Belongs to a multi-record entity cluster">
+           <i class="fa-solid fa-clone mr-1 text-amber-500"></i> Duplicate (${r.cluster_size || 2}x)
+         </span>`
+      : `<span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200" title="Single occurrence in staging">
+           <i class="fa-solid fa-check mr-1 text-emerald-500"></i> Unique
+         </span>`;
+
+    const goldenDisplay = r.canonical_id
+      ? `<div class="font-mono text-2xs font-semibold text-indigo-700">${r.canonical_id}</div>
+         <div class="text-3xs text-softslate-500 truncate max-w-[130px]">${r.resolved_name || ''}</div>`
+      : '<span class="text-softslate-400 italic">Unlinked</span>';
+
+    return `
+      <tr class="hover:bg-softslate-50/80 transition ${isDupe ? 'bg-amber-50/20' : ''}">
+        <td class="py-2.5 px-3 font-mono text-softslate-500 font-medium">#${r.raw_id}</td>
+        <td class="py-2.5 px-3 whitespace-nowrap">${systemBadges[r.source_system] || r.source_system}</td>
+        <td class="py-2.5 px-3 font-mono text-softslate-800 font-semibold">${r.source_record_id}</td>
+        <td class="py-2.5 px-3 font-medium text-softslate-900">${r.raw_full_name || '--'}</td>
+        <td class="py-2.5 px-3 font-mono text-softslate-600">${r.raw_dob || '--'}</td>
+        <td class="py-2.5 px-3 text-softslate-600 truncate max-w-[170px]" title="${r.raw_email || ''}">${r.raw_email || '--'}</td>
+        <td class="py-2.5 px-3 font-mono text-softslate-600 text-3xs whitespace-nowrap">${r.raw_phone || '--'}</td>
+        <td class="py-2.5 px-3">
+          <span class="font-medium text-softslate-800">${r.raw_role || '--'}</span>
+          <span class="text-softslate-400 text-3xs ml-1">(${r.raw_department || '--'})</span>
+        </td>
+        <td class="py-2.5 px-3 whitespace-nowrap">${dupeBadge}</td>
+        <td class="py-2.5 px-3 whitespace-nowrap">${goldenDisplay}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function downloadRawCSV() {
+  if (!allRawRecords || allRawRecords.length === 0) {
+    showToast('No records available to export.', 'info');
+    return;
+  }
+  const headers = ['raw_id', 'source_system', 'source_record_id', 'raw_full_name', 'raw_dob', 'raw_email', 'raw_phone', 'raw_department', 'raw_role', 'canonical_id', 'resolved_name', 'cluster_size', 'is_duplicate'];
+  const csvRows = [headers.join(',')];
+
+  allRawRecords.forEach(r => {
+    const row = headers.map(h => {
+      let val = r[h] !== undefined && r[h] !== null ? String(r[h]) : '';
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        val = `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    });
+    csvRows.push(row.join(','));
+  });
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `university_dwh_raw_staging_records_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`Exported ${allRawRecords.length} raw records to CSV.`, 'success');
+}
+

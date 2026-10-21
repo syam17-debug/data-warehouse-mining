@@ -96,6 +96,49 @@ def initialize_dwh():
     dept_data = olap_engine.get_enrollment_by_department()
     impact_data = olap_engine.get_pre_vs_post_consolidation_impact()
 
+    # Query all raw staging records with duplicate cluster annotations
+    raw_staging_sql = """
+    SELECT 
+        r.raw_id,
+        r.source_system,
+        r.source_record_id,
+        r.raw_full_name,
+        r.raw_dob,
+        r.raw_email,
+        r.raw_phone,
+        r.raw_department,
+        r.raw_role,
+        m.canonical_id,
+        e.resolved_name,
+        e.cluster_size,
+        CASE WHEN e.cluster_size > 1 THEN 1 ELSE 0 END as is_duplicate
+    FROM stg_raw_records r
+    LEFT JOIN er_record_mapping m ON r.raw_id = m.raw_id
+    LEFT JOIN er_resolved_entities e ON m.canonical_id = e.canonical_id
+    ORDER BY r.raw_id ASC;
+    """
+    raw_rows = db_manager.execute_query(raw_staging_sql)
+    total_raw = len(raw_rows)
+    dupe_raw = sum(1 for r in raw_rows if r.get("is_duplicate") == 1)
+    singleton_raw = total_raw - dupe_raw
+    raw_records_data = {
+        "total_count": total_raw,
+        "duplicate_count": dupe_raw,
+        "singleton_count": singleton_raw,
+        "deduplication_rate_pct": round((dupe_raw / total_raw * 100), 1) if total_raw > 0 else 0,
+        "records": raw_rows
+    }
+
+    # Generate CSV content for sidebar export
+    import io
+    import csv
+    csv_buffer = io.StringIO()
+    if raw_rows:
+        writer = csv.DictWriter(csv_buffer, fieldnames=list(raw_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(raw_rows)
+    raw_csv_content = csv_buffer.getvalue()
+
     cypher_content = ""
     if NEO4J_EXPORT_PATH.exists():
         with open(NEO4J_EXPORT_PATH, "r", encoding="utf-8") as f:
@@ -141,7 +184,9 @@ def initialize_dwh():
         "dept_data": dept_data,
         "impact_data": impact_data,
         "cypher_content": cypher_content,
-        "sql_precomputed": sql_precomputed
+        "sql_precomputed": sql_precomputed,
+        "raw_records_data": raw_records_data,
+        "raw_csv_content": raw_csv_content
     }
 
 def main():
@@ -184,12 +229,19 @@ def main():
         st.caption("Data Mining & Warehousing Major Project")
         st.divider()
 
-        st.metric("Total Raw Records", dwh_data["overview"].get("total_raw_records", 53))
-        st.metric("Golden Entities", dwh_data["overview"].get("resolved_golden_entities", 29))
-        st.metric("Deduplication Rate", f"{dwh_data['overview'].get('deduplication_rate_pct', 45.3)}%")
+        st.metric("Total Raw Records", dwh_data["overview"].get("total_raw_records", 116))
+        st.metric("Golden Entities", dwh_data["overview"].get("resolved_golden_entities", 61))
+        st.metric("Duplicates Consolidated", dwh_data["overview"].get("duplicates_consolidated", 55))
+        st.metric("Deduplication Rate", f"{dwh_data['overview'].get('deduplication_rate_pct', 47.4)}%")
 
         st.divider()
-        st.markdown("**Quick Exports & Tools**")
+        st.markdown("**Staging & Graph Exports**")
+        st.download_button(
+            label="📥 Download Raw Staging Records (CSV)",
+            data=dwh_data.get("raw_csv_content", ""),
+            file_name="university_dwh_raw_staging_records.csv",
+            mime="text/csv"
+        )
         st.download_button(
             label="📥 Download Neo4j Cypher Script",
             data=dwh_data.get("cypher_content", ""),
